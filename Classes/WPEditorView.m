@@ -55,6 +55,8 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 @property (nonatomic, strong, readwrite) ZSSTextView *sourceView;
 @property (nonatomic, strong, readonly) UIWebView* webView;
 
+@property (nonatomic,weak)UIScrollView *scrollView;
+
 #pragma mark - Editor loading support
 @property (nonatomic, copy, readwrite) NSString* preloadedHTML;
 
@@ -91,7 +93,7 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
                                             CGRectGetHeight(childFrame)-CGRectGetHeight(self.sourceViewTitleField.frame)-CGRectGetHeight(self.sourceContentDividerView.frame));
         
         [self createSourceViewWithFrame:sourceViewFrame];
-		[self createWebViewWithFrame:childFrame];
+        [self createWebViewWithFrame:childFrame];
 		[self setupHTMLEditor];
 	}
 	
@@ -191,7 +193,11 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 {
 	NSAssert(!_webView, @"The web view must not exist when this method is called!");
 	
-	_webView = [[UIWebView alloc] initWithFrame:frame];
+    UIScrollView *scrollView = [[UIScrollView alloc]init];
+    scrollView.frame = frame;
+    [self addSubview:scrollView];
+    
+	_webView = [[UIWebView alloc] initWithFrame:scrollView.bounds];
 	_webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	_webView.delegate = self;
 	_webView.scalesPageToFit = YES;
@@ -205,7 +211,9 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     _webView.allowsInlineMediaPlayback = YES;
     [self startObservingWebViewContentSizeChanges];
     
-	[self addSubview:_webView];
+//    [self addSubview:_webView];
+    [scrollView addSubview:_webView];
+    _scrollView = scrollView;
 }
 
 - (void)setupHTMLEditor
@@ -232,6 +240,7 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     //
     // Ref bug: https://github.com/wordpress-mobile/WordPress-iOS-Editor/issues/324
     //
+    
     if (object == self.webView.scrollView) {
         
         if ([keyPath isEqualToString:WPEditorViewWebViewContentSizeKey]) {
@@ -240,12 +249,15 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
             CGSize newSize = [newValue CGSizeValue];
         
             if (newSize.height != self.lastEditorHeight) {
+
                 
                 // First make sure that the content size is not changed without us recalculating it.
                 //
+                
+                NSLog(@"+++++++%ld",(long)self.lastEditorHeight);
                 self.webView.scrollView.contentSize = CGSizeMake(CGRectGetWidth(self.frame), self.lastEditorHeight);
                 [self workaroundBrokenWebViewRendererBug];
-                
+
                 // Then recalculate it asynchronously so the UIWebView doesn't break.
                 //
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -342,6 +354,8 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 }
 
 - (void)refreshInsetsForKeyboardOffset:(CGFloat)vOffset {
+    
+
     UIEdgeInsets insets = UIEdgeInsetsZero;
     insets.bottom = vOffset - insets.bottom;
     if (@available(iOS 11, *)) {
@@ -403,13 +417,29 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     
     NSString* newHeightString = [self.webView stringByEvaluatingJavaScriptFromString:@"$(document.body).height();"];
     NSInteger newHeight = [newHeightString integerValue];
+
+    NSLog(@"------%ld",newHeight);
     
-    self.lastEditorHeight = newHeight;
-    UIEdgeInsets insets = UIEdgeInsetsZero;
-    if (@available(iOS 11, *)) {
-        insets = self.safeAreaInsets;
+    if (newHeight != 0) {
+        CGRect rect = self.webView.frame;
+        rect.size.height = newHeight;
+        self.webView.frame = rect;
+        
+        _scrollView.contentSize = CGSizeMake(_scrollView.frame.size.width, rect.size.height);
     }
-    self.webView.scrollView.contentSize = CGSizeMake(self.frame.size.width - insets.left - insets.right, newHeight);
+    
+//    NSLog(@"old**********%f",self.webView.scrollView.contentOffset.y);
+//    self.webView.scrollView.contentSize = CGSizeMake(self.frame.size.width, newHeight);
+//    NSLog(@"**********%f",self.webView.scrollView.contentOffset.y);
+
+//    self.lastEditorHeight = newHeight;
+//    UIEdgeInsets insets = UIEdgeInsetsZero;
+////    if (@available(iOS 11, *)) {
+////        insets = self.safeAreaInsets;
+////    }
+//    NSLog(@"old**********%f",self.webView.scrollView.contentOffset.y);
+//    self.webView.scrollView.contentSize = CGSizeMake(self.frame.size.width - insets.left - insets.right, newHeight);
+//    NSLog(@"**********%f",self.webView.scrollView.contentOffset.y);
 }
 
 #pragma mark - UIWebViewDelegate
@@ -1420,6 +1450,9 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
  */
 - (void)scrollToCaretAnimated:(BOOL)animated
 {
+    
+    return;
+    
     BOOL notEnoughInfoToScroll = self.caretYOffset == nil || self.lineHeight == nil;
     
     if (notEnoughInfoToScroll) {
