@@ -95,7 +95,8 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
         [self createSourceViewWithFrame:sourceViewFrame];
         [self createWebViewWithFrame:childFrame];
 		[self setupHTMLEditor];
-	}
+        
+    }
 	
 	return self;
 }
@@ -201,7 +202,7 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 	_webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	_webView.delegate = self;
 	_webView.scalesPageToFit = YES;
-	_webView.dataDetectorTypes = UIDataDetectorTypeNone;
+_webView.dataDetectorTypes = UIDataDetectorTypeNone;
     _webView.backgroundColor = [UIColor clearColor];
     _webView.opaque = NO;
     _webView.scrollView.bounces = NO;
@@ -209,6 +210,7 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     _webView.keyboardDisplayRequiresUserAction = NO;
     _webView.scrollView.bounces = YES;
     _webView.allowsInlineMediaPlayback = YES;
+    _webView.scrollView.scrollEnabled = NO;
     [self startObservingWebViewContentSizeChanges];
     
 //    [self addSubview:_webView];

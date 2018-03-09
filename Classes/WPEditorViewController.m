@@ -304,7 +304,7 @@
         CGFloat viewWidth = CGRectGetWidth(self.view.frame);
         UIViewAutoresizing mask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         
-        CGRect frame = CGRectMake(0.0, 0.0, viewWidth, CGRectGetHeight(self.view.frame));
+        CGRect frame = CGRectMake(0.0, 100, viewWidth, CGRectGetHeight(self.view.frame) - 100 - 64);
         
         self.editorView = [[WPEditorView alloc] initWithFrame:frame];
         self.editorView.delegate = self;

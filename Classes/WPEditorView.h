@@ -194,6 +194,7 @@ stylesForCurrentSelection:(NSArray*)styles;
 
 @interface WPEditorView : UIView
 
+
 /**
  *	@brief		The editor's delegate.
  */
