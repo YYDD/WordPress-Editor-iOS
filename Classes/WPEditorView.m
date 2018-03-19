@@ -257,7 +257,12 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 - (void)setupHTMLEditor
 {
     NSBundle * bundle = [NSBundle bundleForClass:[WPEditorView class]];
-    NSURL * editorURL = [bundle URLForResource:@"editor" withExtension:@"html"];
+    NSURL *editorURL = nil;
+    if (self.forceHideTitle) {
+        editorURL = [bundle URLForResource:@"editor_helian" withExtension:@"html"];
+    }else {
+        editorURL = [bundle URLForResource:@"editor" withExtension:@"html"];
+    }
     [self.webView loadRequest:[NSURLRequest requestWithURL:editorURL]];
 }
 
