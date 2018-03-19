@@ -86,6 +86,9 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     self = [super initWithFrame:frame];
 
     if (self) {
+        
+        self.backgroundColor = [UIColor redColor];
+        
         CGRect childFrame = frame;
         childFrame.origin = CGPointZero;
         
@@ -149,6 +152,7 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     if (@available(iOS 11, *)) {
         insets = self.safeAreaInsets;
     }
+    
 
     CGRect frame = self.bounds;
     CGFloat textWidth = CGRectGetWidth(frame) - (2 * UITextFieldLeftRightInset) - insets.left - insets.right;
@@ -166,6 +170,9 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     CGFloat top = HTMLViewTopInset + insets.top;
     CGFloat bottom = 0;
     self.sourceView.textContainerInset = UIEdgeInsetsMake(top, left, bottom, right);
+
+    self.scrollView.frame = self.bounds;
+    
 }
 
 #pragma mark - Init helpers
@@ -232,7 +239,7 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 	_webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	_webView.delegate = self;
 	_webView.scalesPageToFit = YES;
-_webView.dataDetectorTypes = UIDataDetectorTypeNone;
+    _webView.dataDetectorTypes = UIDataDetectorTypeNone;
     _webView.backgroundColor = [UIColor clearColor];
     _webView.opaque = NO;
     _webView.scrollView.bounces = NO;
@@ -243,7 +250,6 @@ _webView.dataDetectorTypes = UIDataDetectorTypeNone;
     _webView.scrollView.scrollEnabled = NO;
     [self startObservingWebViewContentSizeChanges];
     
-//    [self addSubview:_webView];
     [scrollView addSubview:_webView];
     _scrollView = scrollView;
 }
@@ -286,7 +292,6 @@ _webView.dataDetectorTypes = UIDataDetectorTypeNone;
                 // First make sure that the content size is not changed without us recalculating it.
                 //
                 
-                NSLog(@"+++++++%ld",(long)self.lastEditorHeight);
                 self.webView.scrollView.contentSize = CGSizeMake(CGRectGetWidth(self.frame), self.lastEditorHeight);
                 [self workaroundBrokenWebViewRendererBug];
 
@@ -456,6 +461,7 @@ _webView.dataDetectorTypes = UIDataDetectorTypeNone;
         self.webView.frame = rect;
         
         _scrollView.contentSize = CGSizeMake(_scrollView.frame.size.width, rect.size.height);
+        NSLog(@"..........%f",rect.size.height);
     }
     
 //    NSLog(@"old**********%f",self.webView.scrollView.contentOffset.y);
@@ -1377,6 +1383,14 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
  */
 - (WPEditorField*)createFieldWithId:(NSString*)fieldId
 {
+    
+    if (self.forceHideTitle) {
+        //强制隐藏标题
+        if ([fieldId isEqualToString:kWPEditorViewFieldTitleId]) {
+            return nil;
+        }
+    }
+    
     NSAssert([fieldId isKindOfClass:[NSString class]],
              @"We're expecting a non-nil NSString object here.");
     
@@ -2192,5 +2206,6 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
         [self.delegate editorView:self sourceFieldFocused:view];
     }
 }
+
 
 @end
