@@ -63,6 +63,11 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 #pragma mark - Fields
 @property (nonatomic, weak, readwrite) WPEditorField* focusedField;
 
+/**
+ 强制隐藏标题
+ */
+@property (nonatomic, assign)BOOL forceHideTitle;
+
 @end
 
 @implementation WPEditorView
@@ -76,6 +81,31 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 }
 
 #pragma mark - UIView
+- (instancetype)initInHideTitleAreaWithFrame:(CGRect)frame {
+    
+    self = [super initWithFrame:frame];
+
+    if (self) {
+        CGRect childFrame = frame;
+        childFrame.origin = CGPointZero;
+        
+//        [self createSourceTitleViewWithFrame: childFrame];
+//        [self createSourceDividerViewWithFrame:CGRectMake(0.0f, CGRectGetMaxY(self.sourceViewTitleField.frame), CGRectGetWidth(childFrame), 1.0f)];
+//        CGRect sourceViewFrame = CGRectMake(0.0f,
+//                                            CGRectGetMaxY(self.sourceContentDividerView.frame),
+//                                            CGRectGetWidth(childFrame),
+//                                            CGRectGetHeight(childFrame)-CGRectGetHeight(self.sourceViewTitleField.frame)-CGRectGetHeight(self.sourceContentDividerView.frame));
+        
+        self.forceHideTitle = YES;
+        [self createSourceViewWithFrame:childFrame];
+        [self createWebViewWithFrame:childFrame];
+        [self setupHTMLEditor];
+        
+    }
+    
+    return self;
+    
+}
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -419,8 +449,6 @@ _webView.dataDetectorTypes = UIDataDetectorTypeNone;
     
     NSString* newHeightString = [self.webView stringByEvaluatingJavaScriptFromString:@"$(document.body).height();"];
     NSInteger newHeight = [newHeightString integerValue];
-
-    NSLog(@"------%ld",newHeight);
     
     if (newHeight != 0) {
         CGRect rect = self.webView.frame;

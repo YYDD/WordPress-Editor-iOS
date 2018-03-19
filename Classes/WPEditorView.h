@@ -478,6 +478,15 @@ stylesForCurrentSelection:(NSArray*)styles;
  */
 - (void)enableEditing;
 
+
+/**
+ 创建 没有标题
+
+ @param frame 坐标
+ @return 返回view
+ */
+- (instancetype)initInHideTitleAreaWithFrame:(CGRect)frame;
+
 #pragma mark - Styles
 
 - (void)alignLeft;
