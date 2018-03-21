@@ -38,7 +38,7 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 @property (nonatomic, strong, readwrite) NSNumber *lineHeight;
 
 #pragma mark - Editor height
-@property (nonatomic, assign, readwrite) NSInteger lastEditorHeight;
+@property (nonatomic, assign, readwrite) CGFloat lastEditorHeight;
 
 #pragma mark - Editing state
 @property (nonatomic, assign, readwrite, getter = isEditing) BOOL editing;
@@ -290,18 +290,20 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
             NSValue *newValue = change[NSKeyValueChangeNewKey];
             
             CGSize newSize = [newValue CGSizeValue];
-        
+            
             if (newSize.height != self.lastEditorHeight) {
-
+                NSLog(@"---%f---%f",newSize.height,self.lastEditorHeight);
                 
                 // First make sure that the content size is not changed without us recalculating it.
                 //
                 
                 self.webView.scrollView.contentSize = CGSizeMake(CGRectGetWidth(self.frame), self.lastEditorHeight);
+                
+                
                 [self workaroundBrokenWebViewRendererBug];
-
-                // Then recalculate it asynchronously so the UIWebView doesn't break.
-                //
+//
+//                // Then recalculate it asynchronously so the UIWebView doesn't break.
+//                //
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                     [self refreshVisibleViewportAndContentSize];
                 });
@@ -452,21 +454,26 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 - (void)refreshVisibleViewportAndContentSize
 {
     [self.webView stringByEvaluatingJavaScriptFromString:@"ZSSEditor.refreshVisibleViewportSize();"];
-    
+
 #ifdef DEBUG
     [self.webView stringByEvaluatingJavaScriptFromString:@"ZSSEditor.logMainElementSizes();"];
 #endif
     
     NSString* newHeightString = [self.webView stringByEvaluatingJavaScriptFromString:@"$(document.body).height();"];
+    
     NSInteger newHeight = [newHeightString integerValue];
     
     if (newHeight != 0) {
         CGRect rect = self.webView.frame;
+        if (self.scrollView.frame.size.height > newHeight) {
+            newHeight = self.scrollView.frame.size.height;
+        }
+        self.lastEditorHeight = newHeight;
         rect.size.height = newHeight;
+        self.webView.scrollView.contentSize = CGSizeMake(self.webView.scrollView.contentSize.width, newHeight);
         self.webView.frame = rect;
-        
+
         _scrollView.contentSize = CGSizeMake(_scrollView.frame.size.width, rect.size.height);
-        NSLog(@"..........%f",rect.size.height);
     }
     
 //    NSLog(@"old**********%f",self.webView.scrollView.contentOffset.y);
@@ -688,6 +695,7 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
          // field while also showing the virtual keyboard.  You'll notice the caret can, at times,
          // go behind the virtual keyboard.
          //
+         
          [self refreshVisibleViewportAndContentSize];
          [self scrollToCaretAnimated:NO];
      }];
@@ -1500,40 +1508,45 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
 - (void)scrollToCaretAnimated:(BOOL)animated
 {
     
-    return;
-    
     BOOL notEnoughInfoToScroll = self.caretYOffset == nil || self.lineHeight == nil;
     
     if (notEnoughInfoToScroll) {
         return;
     }
     
-    CGRect viewport = [self viewport];
+//    CGRect viewport = [self viewport];
     CGFloat caretYOffset = [self.caretYOffset floatValue];
     CGFloat lineHeight = [self.lineHeight floatValue];
     CGFloat offsetBottom = caretYOffset + lineHeight;
-    
-    BOOL mustScroll = (caretYOffset < viewport.origin.y
-                       || offsetBottom > viewport.origin.y + CGRectGetHeight(viewport));
-    
-    if (mustScroll) {
-        // DRM: by reducing the necessary height we avoid an issue that moves the caret out
-        // of view.
-        //
-        CGFloat necessaryHeight = viewport.size.height / 2;
+
+    if (offsetBottom > self.scrollView.frame.size.height) {
         
-        // DRM: just make sure we don't go out of bounds with the desired yOffset.
-        //
-        caretYOffset = MIN(caretYOffset,
-                           self.webView.scrollView.contentSize.height - necessaryHeight);
-        
-        CGRect targetRect = CGRectMake(0.0f,
-                                       caretYOffset,
-                                       CGRectGetWidth(viewport),
-                                       necessaryHeight);
-        
-        [self.webView.scrollView scrollRectToVisible:targetRect animated:animated];
+        [self.scrollView setContentOffset:CGPointMake(0, offsetBottom - self.scrollView.frame.size.height) animated:YES];
     }
+    
+//    BOOL mustScroll = (caretYOffset < viewport.origin.y
+//                       || offsetBottom > viewport.origin.y + CGRectGetHeight(viewport));
+//
+//    if (mustScroll) {
+//        // DRM: by reducing the necessary height we avoid an issue that moves the caret out
+//        // of view.
+//        //
+//        CGFloat necessaryHeight = viewport.size.height / 2;
+//
+//        // DRM: just make sure we don't go out of bounds with the desired yOffset.
+//        //
+//        caretYOffset = MIN(caretYOffset,
+//                           self.webView.scrollView.contentSize.height - necessaryHeight);
+//
+//        CGRect targetRect = CGRectMake(0.0f,
+//                                       caretYOffset,
+//                                       CGRectGetWidth(viewport),
+//                                       necessaryHeight);
+//
+////        [self.webView.scrollView scrollRectToVisible:targetRect animated:animated];
+//        [self.scrollView scrollRectToVisible:targetRect animated:animated];
+    
+  //  }
 }
 
 #pragma mark - Selection

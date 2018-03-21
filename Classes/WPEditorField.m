@@ -193,7 +193,6 @@ static NSString* const kWPEditorFieldJavascriptTrue = @"true";
         }
         
         NSString* javascript = [NSString stringWithFormat:@"%@.setHTML(\"%@\");", [self wrappedNodeJavascriptAccessor], html];
-        
         [self.webView stringByEvaluatingJavaScriptFromString:javascript];
     }
 }
