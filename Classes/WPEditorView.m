@@ -68,6 +68,8 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
  */
 @property (nonatomic, assign)BOOL forceHideTitle;
 
+@property (nonatomic, assign)BOOL hlEditing;
+
 @end
 
 @implementation WPEditorView
@@ -283,13 +285,22 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     //
     // Ref bug: https://github.com/wordpress-mobile/WordPress-iOS-Editor/issues/324
     //
+
+    //这个kvo先不执行了 ~
+    return;
+
     
     if (object == self.webView.scrollView) {
+        
+        if (!self.hlEditing) {
+            return;
+        }
         
         if ([keyPath isEqualToString:WPEditorViewWebViewContentSizeKey]) {
             NSValue *newValue = change[NSKeyValueChangeNewKey];
             
             CGSize newSize = [newValue CGSizeValue];
+            
             
             if (newSize.height != self.lastEditorHeight) {
                 NSLog(@"---%f---%f",newSize.height,self.lastEditorHeight);
@@ -301,7 +312,7 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
                 
                 
                 [self workaroundBrokenWebViewRendererBug];
-//
+
 //                // Then recalculate it asynchronously so the UIWebView doesn't break.
 //                //
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -389,7 +400,7 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 
 - (void)keyboardDidShow:(NSNotification *)notification
 {
-    [self scrollToCaretAnimated:NO];
+//    [self scrollToCaretAnimated:NO];
 }
 
 - (void)keyboardWillShow:(NSNotification *)notification
@@ -468,11 +479,13 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
         if (self.scrollView.frame.size.height > newHeight) {
             newHeight = self.scrollView.frame.size.height;
         }
+        
         self.lastEditorHeight = newHeight;
         rect.size.height = newHeight;
         self.webView.scrollView.contentSize = CGSizeMake(self.webView.scrollView.contentSize.width, newHeight);
         self.webView.frame = rect;
 
+        
         _scrollView.contentSize = CGSizeMake(_scrollView.frame.size.width, rect.size.height);
     }
     
@@ -1513,6 +1526,10 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
     if (notEnoughInfoToScroll) {
         return;
     }
+ 
+    if (self.contentField.html.length == 0) {
+        return;
+    }
     
 //    CGRect viewport = [self viewport];
     CGFloat caretYOffset = [self.caretYOffset floatValue];
@@ -1846,6 +1863,7 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
 {
 	[self.webView endEditing:YES];
 	[self.sourceView endEditing:YES];
+    self.hlEditing = NO;
 }
 
 #pragma mark - Editor mode
@@ -1908,6 +1926,7 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
     [self.contentField disableEditing];
     [self.sourceViewTitleField setEnabled:NO];
     [self.sourceView setEditable:NO];
+    self.hlEditing = NO;
 }
 
 - (void)enableEditing
@@ -1916,6 +1935,7 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
     [self.contentField enableEditing];
     [self.sourceViewTitleField setEnabled:YES];
     [self.sourceView setEditable:YES];
+    self.hlEditing = YES;
 }
 
 #pragma mark - Styles
