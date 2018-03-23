@@ -105,7 +105,6 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
         [self createSourceViewWithFrame:childFrame];
         [self createWebViewWithFrame:childFrame];
         [self setupHTMLEditor];
-        
     }
     
     return self;
@@ -229,6 +228,11 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     [self addSubview:_sourceView];
 }
 
+- (void)bgScrollViewTap {
+    
+    [self enableEditing];
+}
+
 - (void)createWebViewWithFrame:(CGRect)frame
 {
 	NSAssert(!_webView, @"The web view must not exist when this method is called!");
@@ -236,6 +240,10 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     UIScrollView *scrollView = [[UIScrollView alloc]init];
     scrollView.frame = frame;
     [self addSubview:scrollView];
+    
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(bgScrollViewTap)];
+    [scrollView addGestureRecognizer:tapGesture];
+    
     
 	_webView = [[UIWebView alloc] initWithFrame:scrollView.bounds];
 	_webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -251,7 +259,6 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     _webView.allowsInlineMediaPlayback = YES;
     _webView.scrollView.scrollEnabled = NO;
     [self startObservingWebViewContentSizeChanges];
-    
     [scrollView addSubview:_webView];
     _scrollView = scrollView;
 }
@@ -709,7 +716,12 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
          // go behind the virtual keyboard.
          //
          
-         [self refreshVisibleViewportAndContentSize];
+         
+         //不频繁去做调整
+         [NSTimer cancelPreviousPerformRequestsWithTarget:self selector:@selector(refreshVisibleViewportAndContentSize) object:nil];
+         [self performSelector:@selector(refreshVisibleViewportAndContentSize) withObject:self afterDelay:0.3];
+         
+//         [self refreshVisibleViewportAndContentSize];
          [self scrollToCaretAnimated:NO];
      }];
 }
