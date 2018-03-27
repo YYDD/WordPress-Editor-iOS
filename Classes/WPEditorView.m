@@ -68,8 +68,6 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
  */
 @property (nonatomic, assign)BOOL forceHideTitle;
 
-@property (nonatomic, assign)BOOL hlEditing;
-
 @end
 
 @implementation WPEditorView
@@ -230,7 +228,7 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 
 - (void)bgScrollViewTap {
     
-    [self enableEditing];
+ //   [self enableEditing];
 }
 
 - (void)createWebViewWithFrame:(CGRect)frame
@@ -261,6 +259,7 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     [self startObservingWebViewContentSizeChanges];
     [scrollView addSubview:_webView];
     _scrollView = scrollView;
+    
 }
 
 - (void)setupHTMLEditor
@@ -272,7 +271,12 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     }else {
         editorURL = [bundle URLForResource:@"editor" withExtension:@"html"];
     }
+
     [self.webView loadRequest:[NSURLRequest requestWithURL:editorURL]];
+
+    NSString *str = [NSString stringWithContentsOfURL:editorURL encoding:NSUTF8StringEncoding error:nil];
+    
+    [self.webView loadHTMLString:str baseURL:[bundle bundleURL]];
 }
 
 #pragma mark - KVO
@@ -299,9 +303,6 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     
     if (object == self.webView.scrollView) {
         
-        if (!self.hlEditing) {
-            return;
-        }
         
         if ([keyPath isEqualToString:WPEditorViewWebViewContentSizeKey]) {
             NSValue *newValue = change[NSKeyValueChangeNewKey];
@@ -388,19 +389,20 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 
 - (void)startObservingKeyboardNotifications
 {
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardDidShow:)
-                                                 name:UIKeyboardDidShowNotification
-                                               object:nil];
+//    [[NSNotificationCenter defaultCenter] addObserver:self
+//                                             selector:@selector(keyboardDidShow:)
+//                                                 name:UIKeyboardDidShowNotification
+//                                               object:nil];
+//
+//    [[NSNotificationCenter defaultCenter] addObserver:self
+//                                             selector:@selector(keyboardWillShow:)
+//                                                 name:UIKeyboardWillShowNotification
+//                                               object:nil];
+//    [[NSNotificationCenter defaultCenter] addObserver:self
+//                                             selector:@selector(keyboardWillHide:)
+//                                                 name:UIKeyboardWillHideNotification
+//                                               object:nil];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWillShow:)
-                                                 name:UIKeyboardWillShowNotification
-                                               object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWillHide:)
-                                                 name:UIKeyboardWillHideNotification
-                                               object:nil];
 }
 
 #pragma mark - Keyboard status
@@ -517,8 +519,7 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
 			navigationType:(UIWebViewNavigationType)navigationType
 {
 	NSURL *url = [request URL];
-    
-	BOOL shouldLoad = NO;
+    BOOL shouldLoad = NO;
 	
 	if (navigationType != UIWebViewNavigationTypeLinkClicked) {
 		BOOL handled = [self handleWebViewCallbackURL:url];
@@ -1874,8 +1875,7 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
 - (void)endEditing;
 {
 	[self.webView endEditing:YES];
-	[self.sourceView endEditing:YES];
-    self.hlEditing = NO;
+    [self.sourceView endEditing:YES];
 }
 
 #pragma mark - Editor mode
@@ -1938,7 +1938,6 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
     [self.contentField disableEditing];
     [self.sourceViewTitleField setEnabled:NO];
     [self.sourceView setEditable:NO];
-    self.hlEditing = NO;
 }
 
 - (void)enableEditing
@@ -1947,7 +1946,6 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
     [self.contentField enableEditing];
     [self.sourceViewTitleField setEnabled:YES];
     [self.sourceView setEditable:YES];
-    self.hlEditing = YES;
 }
 
 #pragma mark - Styles
