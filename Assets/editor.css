@@ -109,10 +109,15 @@ video {
     background:#2e4453
 }
 
+/*a {*/
+/*    color: #0087be;*/
+/*    text-decoration: none;*/
+/*}*/
 a {
-    color: #0087be;
+    color: #2D2D2D;
     text-decoration: none;
 }
+
 
 blockquote {
     background: #e8f0f5;

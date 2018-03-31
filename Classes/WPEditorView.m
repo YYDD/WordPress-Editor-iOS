@@ -1552,6 +1552,8 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
     if (offsetBottom > self.scrollView.frame.size.height) {
         
         [self.scrollView setContentOffset:CGPointMake(0, offsetBottom - self.scrollView.frame.size.height) animated:YES];
+    }else {
+        [self.scrollView setContentOffset:CGPointZero animated:YES];
     }
     
 //    BOOL mustScroll = (caretYOffset < viewport.origin.y
