@@ -78,6 +78,11 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
     [self stopObservingWebViewContentSizeChanges];
+    
+    
+    [self.webView.scrollView removeObserver:self
+                                 forKeyPath:@"contentOffset"];
+
 }
 
 #pragma mark - UIView
@@ -244,7 +249,7 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     
     
 	_webView = [[UIWebView alloc] initWithFrame:scrollView.bounds];
-	_webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+//    _webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	_webView.delegate = self;
 	_webView.scalesPageToFit = YES;
     _webView.dataDetectorTypes = UIDataDetectorTypeNone;
@@ -259,6 +264,11 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     [self startObservingWebViewContentSizeChanges];
     [scrollView addSubview:_webView];
     _scrollView = scrollView;
+    
+    [_webView.scrollView addObserver:self
+                          forKeyPath:@"contentOffset"
+                             options:NSKeyValueObservingOptionNew
+                             context:nil];
     
 }
 
@@ -297,21 +307,30 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     // Ref bug: https://github.com/wordpress-mobile/WordPress-iOS-Editor/issues/324
     //
 
-    //这个kvo先不执行了 ~
-    return;
 
     
     if (object == self.webView.scrollView) {
+
+        if ([keyPath isEqualToString:@"contentOffset"]) {
+            
+            
+            NSValue *newValue = change[NSKeyValueChangeNewKey];
+            CGPoint point = [newValue CGPointValue];
+            
+            if (point.y == 0) {
+                //不做处理
+                return;
+            }
+            [self.webView.scrollView setContentOffset:CGPointMake(point.x, 0) animated:NO];
         
-        
-        if ([keyPath isEqualToString:WPEditorViewWebViewContentSizeKey]) {
+        }else if ([keyPath isEqualToString:WPEditorViewWebViewContentSizeKey]) {
+            //这个kvo先不执行了 ~
             NSValue *newValue = change[NSKeyValueChangeNewKey];
             
             CGSize newSize = [newValue CGSizeValue];
             
             
             if (newSize.height != self.lastEditorHeight) {
-                NSLog(@"---%f---%f",newSize.height,self.lastEditorHeight);
                 
                 // First make sure that the content size is not changed without us recalculating it.
                 //
@@ -362,10 +381,8 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 - (void)redrawWebView
 {
     NSArray *views = self.webView.scrollView.subviews;
-    
     for(int i = 0; i< views.count; i++){
         UIView *view = views[i];
-        
         [view setNeedsDisplay];
     }
 }
@@ -389,19 +406,19 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 
 - (void)startObservingKeyboardNotifications
 {
-//    [[NSNotificationCenter defaultCenter] addObserver:self
-//                                             selector:@selector(keyboardDidShow:)
-//                                                 name:UIKeyboardDidShowNotification
-//                                               object:nil];
-//
-//    [[NSNotificationCenter defaultCenter] addObserver:self
-//                                             selector:@selector(keyboardWillShow:)
-//                                                 name:UIKeyboardWillShowNotification
-//                                               object:nil];
-//    [[NSNotificationCenter defaultCenter] addObserver:self
-//                                             selector:@selector(keyboardWillHide:)
-//                                                 name:UIKeyboardWillHideNotification
-//                                               object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardDidShow:)
+                                                 name:UIKeyboardDidShowNotification
+                                               object:nil];
+
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillShow:)
+                                                 name:UIKeyboardWillShowNotification
+                                               object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillHide:)
+                                                 name:UIKeyboardWillHideNotification
+                                               object:nil];
     
 }
 
@@ -409,17 +426,17 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 
 - (void)keyboardDidShow:(NSNotification *)notification
 {
-//    [self scrollToCaretAnimated:NO];
+    [self scrollToCaretAnimated:NO];
 }
 
 - (void)keyboardWillShow:(NSNotification *)notification
 {
-    [self refreshKeyboardInsetsWithShowNotification:notification];
+    [self refreshVisibleViewportAndContentSize];
+//    [self refreshKeyboardInsetsWithShowNotification:notification];
 }
 
 - (void)refreshInsetsForKeyboardOffset:(CGFloat)vOffset {
     
-
     UIEdgeInsets insets = UIEdgeInsetsZero;
     insets.bottom = vOffset - insets.bottom;
     if (@available(iOS 11, *)) {
@@ -430,6 +447,7 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     self.webView.scrollView.scrollIndicatorInsets = insets;
     self.sourceView.contentInset = insets;
     self.sourceView.scrollIndicatorInsets = insets;
+
 }
 
 - (void)keyboardWillHide:(NSNotification *)notification
@@ -493,9 +511,15 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
         rect.size.height = newHeight;
         self.webView.scrollView.contentSize = CGSizeMake(self.webView.scrollView.contentSize.width, newHeight);
         self.webView.frame = rect;
-
-        
         _scrollView.contentSize = CGSizeMake(_scrollView.frame.size.width, rect.size.height);
+        [self workaroundBrokenWebViewRendererBug];
+        
+        
+      
+        
+        _scrollView.backgroundColor = [UIColor blueColor];
+        _webView.backgroundColor = [UIColor redColor];
+        
     }
     
 //    NSLog(@"old**********%f",self.webView.scrollView.contentOffset.y);
@@ -764,6 +788,7 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
  */
 - (void)handleImageTappedCallback:(NSURL*)url
 {
+    
     NSParameterAssert([url isKindOfClass:[NSURL class]]);
     
     static NSString *const kTappedUrlParameterName = @"url";
@@ -1136,6 +1161,7 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
 
 - (BOOL)isImageTappedScheme:(NSString*)scheme
 {
+    
     NSAssert([scheme isKindOfClass:[NSString class]],
              @"We're expecting a non-nil string object here.");
     
@@ -1555,6 +1581,10 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
     }else {
         [self.scrollView setContentOffset:CGPointZero animated:YES];
     }
+
+
+    
+    
     
 //    BOOL mustScroll = (caretYOffset < viewport.origin.y
 //                       || offsetBottom > viewport.origin.y + CGRectGetHeight(viewport));
