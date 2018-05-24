@@ -512,13 +512,6 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
         self.webView.scrollView.contentSize = CGSizeMake(self.webView.scrollView.contentSize.width, newHeight);
         self.webView.frame = rect;
         _scrollView.contentSize = CGSizeMake(_scrollView.frame.size.width, rect.size.height);
-        [self workaroundBrokenWebViewRendererBug];
-        
-        
-      
-        
-        _scrollView.backgroundColor = [UIColor blueColor];
-        _webView.backgroundColor = [UIColor redColor];
         
     }
     
