@@ -69,7 +69,7 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 @property (nonatomic, assign)BOOL forceHideTitle;
 
 
-@property (nonatomic, assign)BOOL beObserveContentOffset
+@property (nonatomic, assign)BOOL beObserveContentOffset;
 
 @property (nonatomic, assign)BOOL beObserveContentSize;
 
