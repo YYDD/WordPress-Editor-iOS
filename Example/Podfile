@@ -8,6 +8,7 @@ target 'EditorDemo' do
   pod 'CocoaLumberjack', '~> 3.2.1', :inhibit_warnings => true
 end
 
+
 target 'EditorDemoTests' do
   pod 'CocoaLumberjack', '~> 3.2.1', :inhibit_warnings => true
 end
