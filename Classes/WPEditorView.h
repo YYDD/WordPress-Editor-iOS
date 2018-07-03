@@ -487,6 +487,12 @@ stylesForCurrentSelection:(NSArray*)styles;
  */
 - (instancetype)initInHideTitleAreaWithFrame:(CGRect)frame;
 
+
+- (void)addWebContentObserve;
+
+- (void)removeWebContentObserve;
+
+
 #pragma mark - Styles
 
 - (void)alignLeft;

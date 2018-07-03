@@ -68,6 +68,12 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
  */
 @property (nonatomic, assign)BOOL forceHideTitle;
 
+
+@property (nonatomic, assign)BOOL beObserveContentOffset
+
+@property (nonatomic, assign)BOOL beObserveContentSize;
+
+
 @end
 
 @implementation WPEditorView
@@ -77,11 +83,9 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 - (void)dealloc
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-    [self stopObservingWebViewContentSizeChanges];
     
-    
-    [self.webView.scrollView removeObserver:self
-                                 forKeyPath:@"contentOffset"];
+    [self removeContentSizeObserving];
+    [self removeContentOffsetObserving];
 
 }
 
@@ -261,14 +265,11 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     _webView.scrollView.bounces = YES;
     _webView.allowsInlineMediaPlayback = YES;
     _webView.scrollView.scrollEnabled = NO;
-    [self startObservingWebViewContentSizeChanges];
     [scrollView addSubview:_webView];
     _scrollView = scrollView;
-    
-    [_webView.scrollView addObserver:self
-                          forKeyPath:@"contentOffset"
-                             options:NSKeyValueObservingOptionNew
-                             context:nil];
+
+    [self addContentSizeObserving];
+    [self addContentOffsetObserving];
     
 }
 
@@ -358,19 +359,6 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
                                                object:nil];
 }
 
-- (void)startObservingWebViewContentSizeChanges
-{
-    [_webView.scrollView addObserver:self
-                          forKeyPath:WPEditorViewWebViewContentSizeKey
-                             options:NSKeyValueObservingOptionNew
-                             context:nil];
-}
-
-- (void)stopObservingWebViewContentSizeChanges
-{
-    [self.webView.scrollView removeObserver:self
-                                 forKeyPath:WPEditorViewWebViewContentSizeKey];
-}
 
 
 #pragma mark - Bug Workarounds
@@ -2278,6 +2266,55 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
     if ([self.delegate respondsToSelector:@selector(editorView:sourceFieldFocused:)]) {
         [self.delegate editorView:self sourceFieldFocused:view];
     }
+}
+
+
+- (void)addContentSizeObserving {
+
+    if (self.beObserveContentSize) {
+        return;
+    }
+    [_webView.scrollView addObserver:self
+                          forKeyPath:WPEditorViewWebViewContentSizeKey
+                             options:NSKeyValueObservingOptionNew
+                             context:nil];
+    
+    self.beObserveContentSize = YES;
+    
+}
+
+- (void)addContentOffsetObserving {
+    
+    if (self.beObserveContentOffset) {
+        return;
+    }
+    [_webView.scrollView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew context:nil];
+    self.beObserveContentOffset = YES;
+}
+
+- (void)removeContentSizeObserving {
+    
+    [self.webView.scrollView removeObserver:self
+                                 forKeyPath:WPEditorViewWebViewContentSizeKey];
+    self.beObserveContentSize = NO;
+}
+
+- (void)removeContentOffsetObserving {
+    
+    [self.webView.scrollView removeObserver:self
+                                 forKeyPath:@"contentOffset"];
+    self.beObserveContentOffset = NO;
+}
+
+
+- (void)addWebContentObserve {
+    [self addContentSizeObserving];
+    [self addContentOffsetObserving];
+}
+
+- (void)removeWebContentObserve {
+    [self removeContentOffsetObserving];
+    [self removeContentSizeObserving];
 }
 
 
