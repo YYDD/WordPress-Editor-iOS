@@ -2294,16 +2294,20 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
 
 - (void)removeContentSizeObserving {
     
-    [self.webView.scrollView removeObserver:self
-                                 forKeyPath:WPEditorViewWebViewContentSizeKey];
-    self.beObserveContentSize = NO;
+    if (self.beObserveContentSize) {
+        [self.webView.scrollView removeObserver:self
+                                     forKeyPath:WPEditorViewWebViewContentSizeKey];
+        self.beObserveContentSize = NO;
+    }
 }
 
 - (void)removeContentOffsetObserving {
     
-    [self.webView.scrollView removeObserver:self
-                                 forKeyPath:@"contentOffset"];
-    self.beObserveContentOffset = NO;
+    if (self.beObserveContentOffset) {
+        [self.webView.scrollView removeObserver:self
+                                     forKeyPath:@"contentOffset"];
+        self.beObserveContentOffset = NO;
+    }
 }
 
 
