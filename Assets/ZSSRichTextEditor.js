@@ -371,26 +371,55 @@ ZSSEditor.defaultParagraphSeparatorTag = function() {
 // MARK: - Styles
 
 ZSSEditor.setBold = function() {
-	document.execCommand('bold', false, null);
+    
+    if (document.queryCommandState('bold')) {
+        document.execCommand('bold', false, 'div');
+        document.execCommand('insertHTML', false, '&zwnj;');
+    } else {
+        document.execCommand('bold', false, null);
+    }
+    
 	ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setItalic = function() {
-	document.execCommand('italic', false, null);
+
+    if (document.queryCommandState('italic')) {
+        document.execCommand('italic', false, 'div');
+        document.execCommand('insertHTML', false, '&zwnj;');
+    } else {
+        document.execCommand('italic', false, null);
+    }
+
 	ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setSubscript = function() {
-	document.execCommand('subscript', false, null);
+    
+    if (document.queryCommandState('subscript')) {
+        document.execCommand('subscript', false, 'div');
+        document.execCommand('insertHTML', false, '&zwnj;');
+    } else {
+        document.execCommand('subscript', false, null);
+    }
+
 	ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setSuperscript = function() {
-	document.execCommand('superscript', false, null);
+    
+    if (document.queryCommandState('superscript')) {
+        document.execCommand('superscript', false, 'div');
+        document.execCommand('insertHTML', false, '&zwnj;');
+    } else {
+        document.execCommand('superscript', false, null);
+    }
+
 	ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setStrikeThrough = function() {
+    
 	var commandName = 'strikeThrough';
 	var isDisablingStrikeThrough = ZSSEditor.isCommandEnabled(commandName);
 	
@@ -439,7 +468,14 @@ ZSSEditor.setStrikeThrough = function() {
 };
 
 ZSSEditor.setUnderline = function() {
-	document.execCommand('underline', false, null);
+    
+    if (document.queryCommandState('underline')) {
+        document.execCommand('underline', false, 'div');
+        document.execCommand('insertHTML', false, '&zwnj;');
+    } else {
+        document.execCommand('underline', false, null);
+    }
+
 	ZSSEditor.sendEnabledStyles();
 };
 
@@ -486,7 +522,15 @@ ZSSEditor.removeFormating = function() {
 };
 
 ZSSEditor.setHorizontalRule = function() {
-	document.execCommand('insertHorizontalRule', false, null);
+    
+    
+    if (document.queryCommandState('insertHorizontalRule')) {
+        document.execCommand('insertHorizontalRule', false, 'div');
+        document.execCommand('insertHTML', false, '&zwnj;');
+    } else {
+        document.execCommand('insertHorizontalRule', false, null);
+    }
+
 	ZSSEditor.sendEnabledStyles();
 };
 
@@ -527,13 +571,28 @@ ZSSEditor.redo = function() {
 };
 
 ZSSEditor.setOrderedList = function() {
-    document.execCommand('insertOrderedList', false, null);
+    
+    
+    if (document.queryCommandState('insertOrderedList')) {
+        document.execCommand('insertOrderedList', false, 'div');
+        document.execCommand('insertHTML', false, '&zwnj;');
+    } else {
+        document.execCommand('insertOrderedList', false, null);
+    }
+    
     ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setUnorderedList = function() {
-	document.execCommand('insertUnorderedList', false, null);
-	ZSSEditor.sendEnabledStyles();
+    
+    if (document.queryCommandState('insertUnorderedList')) {
+        document.execCommand('insertUnorderedList', false, 'div');
+        document.execCommand('insertHTML', false, '&zwnj;');
+    } else {
+        document.execCommand('insertUnorderedList', false, null);
+    }
+
+    ZSSEditor.sendEnabledStyles();
 };
 
 ZSSEditor.setJustifyCenter = function() {
@@ -2000,7 +2059,7 @@ ZSSEditor.insertHTML = function(html) {
         currentField.wrapCaretInParagraphIfNecessary();
     }
     
-	document.execCommand('insertHTML', false, html);
+	document.execCommand('insertHTML', false, '&zwnj;');
 	this.sendEnabledStyles();
 };
 
