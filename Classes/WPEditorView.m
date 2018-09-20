@@ -414,7 +414,17 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 
 - (void)keyboardDidShow:(NSNotification *)notification
 {
-    [self scrollToCaretAnimated:NO];
+//    [self scrollToCaretAnimated:NO];
+    
+    NSString *yPositionStr = [self.webView stringByEvaluatingJavaScriptFromString:@"ZSSEditor.getCaretYPosition()"];
+    if(yPositionStr.length != 0) {
+        CGFloat yPosition = [yPositionStr floatValue];
+        
+        CGFloat position = yPosition + [self.lineHeight floatValue];
+        if(position > self.scrollView.frame.size.height) {
+            [self.scrollView setContentOffset:CGPointMake(0, position - self.scrollView.frame.size.height) animated:YES];
+        }
+    }
 }
 
 - (void)keyboardWillShow:(NSNotification *)notification

@@ -2663,6 +2663,8 @@ ZSSField.prototype.handleKeyDownEvent = function(e) {
 
 ZSSField.prototype.handleInputEvent = function(e) {
     
+    this.emptyFieldIfNoContentsAndRefreshPlaceholderColor();
+
     // Skip this if we are composing on an IME keyboard
     if (this.isComposing ) { return; }
     
@@ -2671,7 +2673,6 @@ ZSSField.prototype.handleInputEvent = function(e) {
     // as the field could become empty because of a cut or paste operation as well as a key press.
     // This event takes care of all cases.
     //
-    this.emptyFieldIfNoContentsAndRefreshPlaceholderColor();
     
     var joinedArguments = ZSSEditor.getJoinedFocusedFieldIdAndCaretArguments();
 
@@ -2707,37 +2708,45 @@ ZSSField.prototype.handleTapEvent = function(e) {
             setTimeout(function() { thisObj.callback('callback-link-tap', joinedArguments);}, 500);
         }
 
+        
+        //处理有时候点击图片会失焦情况
         if (targetNode.nodeName.toLowerCase() == 'img') {
-            // If the image is uploading, or is a local image do not select it.
-            if ( targetNode.dataset.wpid ) {
-                this.sendImageTappedCallback( targetNode );
-                return;
-            }
-            
-            // If we're not currently editing just return. No need to apply styles
-            // or acknowledge the tap
-            if ( this.wrappedObject.attr('contenteditable') != "true" ) {
-                return;
-            }
-
-            // Is the tapped image the image we're editing?
-            if ( targetNode == ZSSEditor.currentEditingImage ) {
-                ZSSEditor.removeImageSelectionFormatting( targetNode );
-                this.sendImageTappedCallback( targetNode );
-                return;
-            }
-
-            // If there is a selected image, deselect it. A different image was tapped.
-            if ( ZSSEditor.currentEditingImage ) {
-                ZSSEditor.removeImageSelectionFormatting( ZSSEditor.currentEditingImage );
-            }
-
-            // Format and flag the image as selected.
-            ZSSEditor.currentEditingImage = targetNode;
-            ZSSEditor.applyImageSelectionFormatting( targetNode );
-
-            return;
+            this.focus();
         }
+
+        //***** begin 暂时去掉对img标签的处理
+//        if (targetNode.nodeName.toLowerCase() == 'img') {
+//            // If the image is uploading, or is a local image do not select it.
+//            if ( targetNode.dataset.wpid ) {
+//                this.sendImageTappedCallback( targetNode );
+//                return;
+//            }
+//
+//            // If we're not currently editing just return. No need to apply styles
+//            // or acknowledge the tap
+//            if ( this.wrappedObject.attr('contenteditable') != "true" ) {
+//                return;
+//            }
+//
+//            // Is the tapped image the image we're editing?
+//            if ( targetNode == ZSSEditor.currentEditingImage ) {
+//                ZSSEditor.removeImageSelectionFormatting( targetNode );
+//                this.sendImageTappedCallback( targetNode );
+//                return;
+//            }
+//
+//            // If there is a selected image, deselect it. A different image was tapped.
+//            if ( ZSSEditor.currentEditingImage ) {
+//                ZSSEditor.removeImageSelectionFormatting( ZSSEditor.currentEditingImage );
+//            }
+//
+//            // Format and flag the image as selected.
+//            ZSSEditor.currentEditingImage = targetNode;
+//            ZSSEditor.applyImageSelectionFormatting( targetNode );
+//
+//            return;
+//        }
+        //****end
 
         if (targetNode.className.indexOf('edit-overlay') != -1 || targetNode.className.indexOf('edit-content') != -1) {
             ZSSEditor.removeImageSelectionFormatting( ZSSEditor.currentEditingImage );
