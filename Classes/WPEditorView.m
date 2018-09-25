@@ -345,6 +345,7 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 //                //
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                     [self refreshVisibleViewportAndContentSize];
+                    [self scrollToEditArea];
                 });
             }
         }
@@ -415,16 +416,8 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 - (void)keyboardDidShow:(NSNotification *)notification
 {
 //    [self scrollToCaretAnimated:NO];
+    [self scrollToEditArea];
     
-    NSString *yPositionStr = [self.webView stringByEvaluatingJavaScriptFromString:@"ZSSEditor.getCaretYPosition()"];
-    if(yPositionStr.length != 0) {
-        CGFloat yPosition = [yPositionStr floatValue];
-        
-        CGFloat position = yPosition + [self.lineHeight floatValue];
-        if(position > self.scrollView.frame.size.height) {
-            [self.scrollView setContentOffset:CGPointMake(0, position - self.scrollView.frame.size.height) animated:YES];
-        }
-    }
 }
 
 - (void)keyboardWillShow:(NSNotification *)notification
@@ -1605,6 +1598,19 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
     
   //  }
 }
+
+- (void)scrollToEditArea {
+    NSString *yPositionStr = [self.webView stringByEvaluatingJavaScriptFromString:@"ZSSEditor.getCaretYPosition()"];
+    if(yPositionStr.length != 0) {
+        CGFloat yPosition = [yPositionStr floatValue];
+        
+        CGFloat position = yPosition + [self.lineHeight floatValue];
+        if(position > self.scrollView.frame.size.height) {
+            [self.scrollView setContentOffset:CGPointMake(0, position - self.scrollView.frame.size.height) animated:YES];
+        }
+    }
+}
+
 
 #pragma mark - Selection
 
