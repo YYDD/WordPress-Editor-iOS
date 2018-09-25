@@ -720,7 +720,9 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
              self.caretYOffset = @([parameterValue floatValue]);
          } else if ([parameterName isEqualToString:kLineHeightParameterName]) {
              
-             self.lineHeight = @([parameterValue floatValue]);
+             if (self.contentField.html.length != 0) {
+                 self.lineHeight = @([parameterValue floatValue]);
+             }
          }
      } onComplete:^() {
          
@@ -1087,7 +1089,9 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
              self.caretYOffset = @([parameterValue floatValue]);
          } else if ([parameterName isEqualToString:kLineHeightParameterName]) {
              
-             self.lineHeight = @([parameterValue floatValue]);
+             if (self.contentField.html.length != 0) {
+                 self.lineHeight = @([parameterValue floatValue]);
+             }
          }
      } onComplete:^() {
          [self scrollToCaretAnimated:NO];
