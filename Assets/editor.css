@@ -366,21 +366,24 @@ progress.wp_media_indicator.failed::-webkit-progress-value {
     border-radius: 0 2pt 2pt 0;
 }
 
-
 div.field[contenteditable] {
     padding: 15px 10px 5px 10px;
     box-sizing: border-box;
     font-size: 16px;
+    white-space:pre-line;
 }
 
 div.field[placeholderText][contenteditable=true]:empty:before {
     content: attr(placeholderText);
     transition: 0.2s ease opacity;
+    white-space:pre-line;
 }
 
 div.field[placeholderText][contenteditable=true]:empty:focus:before {
     opacity: 0.6;
+    white-space:pre-line;
 }
+
 
 #separatorDiv {
     -webkit-user-select: none;
