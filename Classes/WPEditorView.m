@@ -345,7 +345,6 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 //                //
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.01 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                     [self refreshVisibleViewportAndContentSize];
-                    [self scrollToEditArea];
                 });
             }
         }
@@ -415,9 +414,7 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 
 - (void)keyboardDidShow:(NSNotification *)notification
 {
-//    [self scrollToCaretAnimated:NO];
-    [self scrollToEditArea];
-    
+    [self scrollToCaretAnimated:NO];
 }
 
 - (void)keyboardWillShow:(NSNotification *)notification
@@ -494,10 +491,9 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     
     if (newHeight != 0) {
         CGRect rect = self.webView.frame;
-//暂时去掉这个，防止一开始键盘弹出来就过长，有滑动
-//        if (self.scrollView.frame.size.height > newHeight) {
-//            newHeight = self.scrollView.frame.size.height;
-//        }
+        if (self.scrollView.frame.size.height > newHeight) {
+            newHeight = self.scrollView.frame.size.height;
+        }
         
         self.lastEditorHeight = newHeight;
         rect.size.height = newHeight;
@@ -1599,19 +1595,6 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
     
   //  }
 }
-
-- (void)scrollToEditArea {
-    NSString *yPositionStr = [self.webView stringByEvaluatingJavaScriptFromString:@"ZSSEditor.getCaretYPosition()"];
-    if(yPositionStr.length != 0) {
-        CGFloat yPosition = [yPositionStr floatValue];
-        
-        CGFloat position = yPosition + [self.lineHeight floatValue];
-        if(position > self.scrollView.frame.size.height) {
-            [self.scrollView setContentOffset:CGPointMake(0, position - self.scrollView.frame.size.height) animated:YES];
-        }
-    }
-}
-
 
 #pragma mark - Selection
 
