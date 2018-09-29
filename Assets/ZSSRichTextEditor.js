@@ -2666,7 +2666,8 @@ ZSSField.prototype.handleInputEvent = function(e) {
     this.emptyFieldIfNoContentsAndRefreshPlaceholderColor();
 
     // Skip this if we are composing on an IME keyboard
-    if (this.isComposing ) { return; }
+    //去掉，不然会多次键盘收起出现之后会出现问题
+    //    if (this.isComposing ) { return; }
     
     // IMPORTANT: we want the placeholder to come up if there's no text, so we clear the field if
     // there's no real content in it.  It's important to do this here and not on keyDown or keyUp

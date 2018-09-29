@@ -494,9 +494,10 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
     
     if (newHeight != 0) {
         CGRect rect = self.webView.frame;
-        if (self.scrollView.frame.size.height > newHeight) {
-            newHeight = self.scrollView.frame.size.height;
-        }
+//暂时去掉这个，防止一开始键盘弹出来就过长，有滑动
+//        if (self.scrollView.frame.size.height > newHeight) {
+//            newHeight = self.scrollView.frame.size.height;
+//        }
         
         self.lastEditorHeight = newHeight;
         rect.size.height = newHeight;
