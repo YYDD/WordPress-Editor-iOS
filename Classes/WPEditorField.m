@@ -148,6 +148,12 @@ static NSString* const kWPEditorFieldJavascriptTrue = @"true";
     return html;
 }
 
+- (NSString *)hlHtml {
+    
+    NSString *html = [self html];
+    return [html stringByReplacingOccurrencesOfString:@"\n\n" withString:@"\n"];
+}
+
 - (NSString*)strippedHtml
 {
     NSString* strippedHtml = nil;

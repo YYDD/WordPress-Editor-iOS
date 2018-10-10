@@ -54,6 +54,13 @@
 - (NSString*)html;
 
 /**
+ 获取到的html 会替换\n\n为\n
+
+ @return html
+ */
+- (NSString *)hlHtml;
+
+/**
  *  @brief      Retrieves the field's html sans HTML tags.
  *
  *  @returns    The field's contents without HTML tags.
