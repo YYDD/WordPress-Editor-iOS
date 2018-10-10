@@ -2599,8 +2599,8 @@ ZSSField.prototype.emptyFieldIfNoContents = function() {
     
     var text = this.getTextWithoutNbspOrBom();
     
-    if (text.length == 0) {
-        
+    if (text.length <= 1) {
+        //防止最后一下的时候 会不出现默认文案
         var hasChildImages = (this.wrappedObject.find('img').length > 0);
         var hasChildVideos = (this.wrappedObject.find('video').length > 0);
         var hasUnorderedList = (this.wrappedObject.find('ul').length > 0);
