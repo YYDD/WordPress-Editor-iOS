@@ -1546,6 +1546,15 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
  *  @brief      Scrolls to a position where the caret is visible. This uses the values stored in caretYOffest and lineHeight properties.
  *  @param      animated    If the scrolling shoud be animated  The offset to show.
  */
+
+
+- (void)forceScrollToBottom {
+    
+    CGFloat offsetY = (self.scrollView.contentSize.height - self.scrollView.frame.size.height);
+    [self.scrollView setContentOffset:CGPointMake(0, offsetY + self.lineHeight.floatValue) animated:YES];
+}
+
+
 - (void)scrollToCaretAnimated:(BOOL)animated
 {
     

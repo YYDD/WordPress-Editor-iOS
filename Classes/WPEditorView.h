@@ -492,6 +492,10 @@ stylesForCurrentSelection:(NSArray*)styles;
 
 - (void)removeWebContentObserve;
 
+/**
+ 用于语音输入 强制到底部
+ */
+- (void)forceScrollToBottom;
 
 #pragma mark - Styles
 
