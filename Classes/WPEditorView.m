@@ -109,7 +109,7 @@ static NSString* const WPEditorViewWebViewContentSizeKey = @"contentSize";
 //                                            CGRectGetHeight(childFrame)-CGRectGetHeight(self.sourceViewTitleField.frame)-CGRectGetHeight(self.sourceContentDividerView.frame));
         
         self.forceHideTitle = YES;
-        [self createSourceViewWithFrame:childFrame];
+//        [self createSourceViewWithFrame:childFrame];
         [self createWebViewWithFrame:childFrame];
         [self setupHTMLEditor];
     }
