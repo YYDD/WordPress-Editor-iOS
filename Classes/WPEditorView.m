@@ -1551,7 +1551,9 @@ shouldStartLoadWithRequest:(NSURLRequest *)request
 - (void)forceScrollToBottom {
     
     CGFloat offsetY = (self.scrollView.contentSize.height - self.scrollView.frame.size.height);
-    [self.scrollView setContentOffset:CGPointMake(0, offsetY + self.lineHeight.floatValue) animated:YES];
+    if (offsetY + self.lineHeight.floatValue > =) {
+        [self.scrollView setContentOffset:CGPointMake(0, offsetY + self.lineHeight.floatValue) animated:YES];
+    }
 }
 
 
